@@ -32,7 +32,7 @@ router.get('/', (req, res) => {
  
   Users.get(req.query)
     .then(users => {
-      res.status(200).json(users);
+      res.status(200).json({ motd: process.env.MOTD, users });
     })
     .catch(error => {
       console.log(error);
