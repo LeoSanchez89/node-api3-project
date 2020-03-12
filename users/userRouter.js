@@ -95,14 +95,17 @@ function validateUserId(req, res, next) {
   // do your magic! 
  Users.getById(req.params.id)
    .then(user => {
-      if (user.id) {
-       req.user = user;
+     console.log(user);
+      if (user) {
+        req.user = user;
+        next();
+      } else {
+        res.status(400).json({ message: "invalid user id" });
       }
-      next();
 		})
 		.catch(error => {
 			console.log(error);
-			res.status(400).json({ message: "invalid user id" });
+			res.status(500).json({ message: "error finding user", error });
 		});
 }
 
