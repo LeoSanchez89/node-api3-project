@@ -3,7 +3,7 @@ const Users = require("./userDb.js");
 const Posts = require("../posts/postDb.js");
 const router = express.Router();
 
-router.post('/', (req, res) => {
+router.post('/', validateUser, (req, res) => {
   
   Users.insert(req.body)
 		.then(added => {
@@ -15,7 +15,7 @@ router.post('/', (req, res) => {
 		});
 });
 
-router.post('/:id/posts', validateUserId, (req, res) => {
+router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
   req.body.user_id = req.user.id
   Posts.insert(req.body)
 		.then(post => {
@@ -109,13 +109,25 @@ function validateUserId(req, res, next) {
 function validateUser(req, res, next) {
   // do your magic!
 
-  next();
+  if (req.body === {}) {
+		res.status(400).json({ message: "missing user data" });
+	} else if (!req.body.text) {
+		res.status(400).json({ message: "missing required name field" });
+	} else {
+		next();
+	}
 }
 
 function validatePost(req, res, next) {
-  // do your magic!
+	// do your magic!
 
-  next();
+	if (!req.body) {
+		res.status(400).json({ message: "missing post data" });
+	} else if (!req.body.text) {
+		res.status(400).json({ message: "missing required text field" });
+	} else {
+		next();
+	}
 }
 
 module.exports = router;
