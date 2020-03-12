@@ -15,22 +15,15 @@ router.post('/', (req, res) => {
 		});
 });
 
-router.post('/:id/posts', (req, res) => {
-  
- Users.getUserPosts(req.params.id)
-		.then(userPosts => {
-      Posts.insert(req.body)
-				.then(post => {
-					res.status(201).json(post);
-				})
-				.catch(error => {
-					console.log(error);
-					res.status(500).json({ error: "error posting" });
-				});
+router.post('/:id/posts', validateUserId, (req, res) => {
+  req.body.user_id = req.user.id
+  Posts.insert(req.body)
+		.then(post => {
+			res.status(201).json(post);
 		})
 		.catch(error => {
 			console.log(error);
-			res.status(500).json({ error: "error fetching user posts" });
+			res.status(500).json({ error: "error posting" });
 		});
   
 });
@@ -47,9 +40,9 @@ router.get('/', (req, res) => {
     });
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateUserId, (req, res) => {
   
-  Users.getById(req.params.id)
+  Users.getById(req.user.id)
     .then(user => {
       res.status(200).json(user);
     })
@@ -59,9 +52,9 @@ router.get('/:id', (req, res) => {
     });
 });
 
-router.get('/:id/posts', (req, res) => {
+router.get('/:id/posts', validateUserId, (req, res) => {
 
-  Users.getUserPosts(req.params.id)
+  Users.getUserPosts(req.user.id)
     .then(posts => {
      
 			res.status(200).json(posts);
@@ -72,11 +65,11 @@ router.get('/:id/posts', (req, res) => {
 		});
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', validateUserId, (req, res) => {
   
-  Users.remove(req.params.id)
+  Users.remove(req.user.id)
     .then(deleted => {
-      res.status(200).json({ message: `user ${req.params.id} has been nuked`});
+      res.status(200).json({ message: `user ${req.user.name} has been nuked`});
     })
     .catch(error => {
       console.log(error);
@@ -84,9 +77,9 @@ router.delete('/:id', (req, res) => {
     });
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUserId, (req, res) => {
   
-  Users.update(req.params.id, req.body)
+  Users.update(req.user.id, req.body)
     .then(updated => {
       res.status(201).json({message: "username successfully updated"});
     })
@@ -99,15 +92,30 @@ router.put('/:id', (req, res) => {
 //custom middleware
 
 function validateUserId(req, res, next) {
-  // do your magic!
+  // do your magic! 
+ Users.getById(req.params.id)
+   .then(user => {
+      if (user.id) {
+       req.user = user;
+      }
+      next();
+		})
+		.catch(error => {
+			console.log(error);
+			res.status(400).json({ message: "invalid user id" });
+		});
 }
 
 function validateUser(req, res, next) {
   // do your magic!
+
+  next();
 }
 
 function validatePost(req, res, next) {
   // do your magic!
+
+  next();
 }
 
 module.exports = router;
